@@ -59,16 +59,9 @@ include(APP_PATH_DOCROOT . 'ControlCenter/header.php');
   }
 
 
-  /* Fetch existing dictionaries */
-  $existing_dicts = array_map(function($a) { return pathinfo($a, PATHINFO_FILENAME); }, glob("$dict_dir/*.sqlite"));
-
-
   // process an uploaded text file
   if(isset($_FILES['dictionary_file'])){
     $name = $_POST['dictionary_name'];
-    if(in_array($name, $existing_dicts)){
-      throw new Exception("Dictionary name already in use"); 
-    }
     if(! preg_match('/^\w+$/',$name) ){
       throw new Exception('Attempt to create a dictionary with an invalid name. Please use only letters, numbers or underscores');
     }
@@ -86,10 +79,18 @@ include(APP_PATH_DOCROOT . 'ControlCenter/header.php');
             
     $terms = file($_FILES['dictionary_file']['tmp_name']);
     $filename = $dict_dir.'/'.$name.'.sqlite'; 
+
+    if(file_exists($filename)){
+      throw new Exception("Dictionary name already in use");
+    }
     $dict = new Dictionary( $filename );
     $dict->append_terms($terms);
     echo "Dictionary $name successfully created";
   }
+
+  /* Fetch existing dictionaries */
+  $existing_dicts = array_map(function($a) { return pathinfo($a, PATHINFO_FILENAME); }, glob("$dict_dir/*.sqlite"));
+
 
 ?>
 
@@ -134,8 +135,8 @@ include(APP_PATH_DOCROOT . 'ControlCenter/header.php');
   <hr/>
   <h4>Delete existing dictionaries</h4>
   
-  <p>If you want to replace an existing dictionary, just delete it and create a new one with an identical name</p>
- 
+  <p>Not yet implemented, but you can manually delete the sqlite file from the dictionaries directory</p>
+
   <form id="deleteDictionary" method="post" 
         action="<?php echo APP_PATH_WEBROOT_FULL;?>plugins/dictionaries/"
         style="padding:0px 10px 20px 10px;">
